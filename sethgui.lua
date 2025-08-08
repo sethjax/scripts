@@ -6,7 +6,7 @@ if RunService:IsStudio() then
 	AwesomeUIModule = require(script.Parent:WaitForChild("AwesomeUIModule"))
 else
 	-- you can go to this link it is not obfuscated :)
-	AwesomeUIModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/sethjax/scripts/refs/heads/main/awesomeuimodule.lua"))
+	AwesomeUIModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/sethjax/scripts/refs/heads/main/awesomeuimodule.lua"))()
 end
 
 type windowObjects = {NewScreenGui: ScreenGui, BackgroundFrame: Frame, insertObject: BindableFunction, removeObject: BindableFunction}
@@ -87,8 +87,8 @@ local function InitMinesweeper()
 	
 	local currentObjects = {}
 	
-	local minePercent = .2
-	local grid = 15
+	local minePercent = .02
+	local grid = 30
 	
 	local isReloading = false
 	
@@ -227,6 +227,7 @@ local function InitMinesweeper()
 						
 						local function showadj(thisTileData)
 							local adj = GetAdjacentTiles(thisTileData)
+							task.wait()
 							for i, v in pairs(adj) do
 								if (not v.isRevealed) and (not v.isFlagged) and (not v.isMine) then
 									v.isRevealed = true
@@ -316,6 +317,11 @@ local function InitMinesweeper()
 	minesweeperWindowObjs.insertToolbarButton:Invoke({Text = "Close", Button1UpCallback = function()
 		print("close")
 	end,})
+	
+	
+end
+
+InitMinesweeper()
 	
 	
 end
