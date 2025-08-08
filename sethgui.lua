@@ -25,8 +25,8 @@ local addItemToToolbar:BindableFunction = windowObjs.insertToolbarButton
 
 local allPageObjs = {}
 
-local page1Object, page1scroller = windowObjs.insertObject:Invoke({Type = "Page"})
-local page2Object, page2scroller = windowObjs.insertObject:Invoke({Type = "Page"})
+local page1Object, page1scroller = windowObjs.insertObject({Type = "Page"})
+local page2Object, page2scroller = windowObjs.insertObject({Type = "Page"})
 
 allPageObjs = {page1Object, page2Object}
 
@@ -40,21 +40,21 @@ SetPageEnabled(1)
 
 local ThisPage = page1scroller
 
-local testOption, onvaluechangeCallback = windowObjs.insertObject:Invoke({Type = "Option", Name = "OptionTestYay"})
+local testOption, onvaluechangeCallback = windowObjs.insertObject({Type = "Option", Name = "OptionTestYay"})
 testOption.Parent = ThisPage
 
 ThisPage = page2scroller
 
-local testOption, onvaluechangeCallback = windowObjs.insertObject:Invoke({Type = "Option", Name = "OptionTestYay 2.0", onvaluechangeCallback = function(value)
+local testOption, onvaluechangeCallback = windowObjs.insertObject({Type = "Option", Name = "OptionTestYay 2.0", onvaluechangeCallback = function(value)
 	print(value)
 end,})
 testOption.Parent = ThisPage
 
-addItemToToolbar:Invoke({Text = "Page 1", Button1UpCallback = function()
+addItemToToolbar({Text = "Page 1", Button1UpCallback = function()
 	SetPageEnabled(1)
 end,})
 
-addItemToToolbar:Invoke({Text = "Page 2", Button1UpCallback = function()
+addItemToToolbar({Text = "Page 2", Button1UpCallback = function()
 	SetPageEnabled(2)
 end,})
 
@@ -79,12 +79,11 @@ local function InitMinesweeper()
 
 	minesweeperWindowObjs.BackgroundFrame.Visible = false
 
-	addItemToToolbar:Invoke({Text = "Minesweeper", Button1UpCallback = function()
+	addItemToToolbar({Text = "Minesweeper", Button1UpCallback = function()
 		minesweeperWindowObjs.BackgroundFrame.Visible = not minesweeperWindowObjs.BackgroundFrame.Visible
 	end,})
-	
-	local minesweeperpage, minesweeperpagescroller, thingy, thingy2 = minesweeperWindowObjs.insertObject:Invoke({Type = "Page"})
-	print(tabletoString(thingy), tabletoString(thingy2))
+	local page2Object, page2scroller = minesweeperWindowObjs.insertObject({Type = "Page"})
+	local minesweeperpage, minesweeperpagescroller = minesweeperWindowObjs.insertObject({Type = "Page"})
 	minesweeperpagescroller:Destroy()
 	minesweeperpage.AnchorPoint = Vector2.new(.5,1)
 	
@@ -95,8 +94,8 @@ local function InitMinesweeper()
 	
 	local currentObjects = {}
 	
-	local minePercent = .02
-	local grid = 30
+	local minePercent = .15
+	local grid = 12
 	
 	local isReloading = false
 	
@@ -178,7 +177,11 @@ local function InitMinesweeper()
 		end
 		
 		local function makeBGColor(tiledata)
-			return Color3.fromHSV(((tiledata.x+tiledata.y)/30)%1, .75, 1)
+			local noise = math.noise(tiledata.x/32, 0, tiledata.y/32)/1.3
+			local noise2 = math.noise(tiledata.x/16, 0, tiledata.y/16)
+			
+			noise = noise * noise2
+			return Color3.fromHSV((((tiledata.x+tiledata.y)/30)+(noise))%1, .5, 1)
 		end
 		
 		local function makeDarkColor(tiledata)
@@ -317,12 +320,12 @@ local function InitMinesweeper()
 	
 	ReloadMinesweeper()
 	
-	minesweeperWindowObjs.insertToolbarButton:Invoke({Text = "Reload", Button1UpCallback = function()
+	minesweeperWindowObjs.insertToolbarButton({Text = "Reload", Button1UpCallback = function()
 		print("retry")
 		ReloadMinesweeper()
 	end,})
 	
-	minesweeperWindowObjs.insertToolbarButton:Invoke({Text = "Close", Button1UpCallback = function()
+	minesweeperWindowObjs.insertToolbarButton({Text = "Close", Button1UpCallback = function()
 		print("close")
 	end,})
 	
