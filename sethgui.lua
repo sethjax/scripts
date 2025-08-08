@@ -1,325 +1,288 @@
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
+local module = {}
 
-local AwesomeUIModule
-if RunService:IsStudio() then
-	AwesomeUIModule = require(script.Parent:WaitForChild("AwesomeUIModule"))
-else
-	-- you can go to this link it is not obfuscated :)
-	AwesomeUIModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/sethjax/scripts/refs/heads/main/awesomeuimodule.lua"))()
+local Player = game.Players.LocalPlayer
+local mouse = Player:GetMouse()
+
+local TextService = game:GetService('TextService')
+
+function module.GetScreenMiddleCoordinates(): Vector2
+	return Vector2.new(workspace.CurrentCamera.ViewportSize.X/2, workspace.CurrentCamera.ViewportSize.Y/2)
 end
 
-type windowObjects = {NewScreenGui: ScreenGui, BackgroundFrame: Frame, insertObject: BindableFunction, removeObject: BindableFunction}
+function module.CreateOption(holderFrame:Frame)
 
-local windowObjs: windowObjects = AwesomeUIModule.CreateWindow({
-	defaultPosition = AwesomeUIModule.GetScreenMiddleCoordinates(),
-	defaultSize = Vector2.new(400,320),
-	backgroundFrameProperties = {
-		BackgroundTransparency = .3,
-	},
-	themeColor = Color3.new(0.721569, 0, 0),
-	nameProperty = "Seth\'s gui",
-})
+end
 
-local addItemToToolbar:BindableFunction = windowObjs.insertToolbarButton
+function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nameProperty:string, defaultPosition:Vector2, defaultSize: Vector2, backgroundFrameProperties: {}, themeColor:Color3}): {NewScreenGui: ScreenGui, BackgroundFrame: Frame, insertObject: BindableFunction, removeObject: BindableFunction}
+	local NewScreenGui = Instance.new("ScreenGui")
+	NewScreenGui.Name = dat.nameProperty or "genericWindow"
+	NewScreenGui.IgnoreGuiInset = true
 
-local allPageObjs = {}
-
-local page1Object, page1scroller = windowObjs.insertObject:Invoke({Type = "Page"})
-local page2Object, page2scroller = windowObjs.insertObject:Invoke({Type = "Page"})
-
-allPageObjs = {page1Object, page2Object}
-
-local function SetPageEnabled(index)
-	for i,v in pairs(allPageObjs) do
-		v.Visible = (i == index)
+	local BackgroundFrame = Instance.new("CanvasGroup", NewScreenGui)
+	BackgroundFrame.Size = UDim2.fromOffset(dat.defaultSize.X,dat.defaultSize.Y)
+	BackgroundFrame.Position = UDim2.fromOffset(dat.defaultPosition.X, dat.defaultPosition.Y)
+	if not dat.backgroundFrameProperties.BackgroundColor3 then
+		BackgroundFrame.BackgroundColor3 = Color3.new(0.0941176, 0.0941176, 0.0941176)
 	end
-end
 
-SetPageEnabled(1)
+	local themeColor = dat.themeColor or Color3.new(0, 0.568627, 1)
 
-local ThisPage = page1scroller
+	for i,v in pairs(dat.backgroundFrameProperties or {}) do
+		local success, err = pcall(function()
+			BackgroundFrame[i] = v
+		end)
+		if not success then
+			warn("Error applying property: ", err, "(backgroundFrameProperties)")
+		end
+	end
 
-local testOption, onvaluechangeCallback = windowObjs.insertObject:Invoke({Type = "Option", Name = "OptionTestYay"})
-testOption.Parent = ThisPage
+	local UICorner = Instance.new("UICorner", BackgroundFrame)
 
-ThisPage = page2scroller
+	local Stroke = Instance.new("UIStroke", BackgroundFrame)
+	Stroke.Color = BackgroundFrame.BackgroundColor3
 
-local testOption, onvaluechangeCallback = windowObjs.insertObject:Invoke({Type = "Option", Name = "OptionTestYay 2.0", onvaluechangeCallback = function(value)
-	print(value)
-end,})
-testOption.Parent = ThisPage
+	local Gradient = Instance.new("UIGradient", BackgroundFrame)
+	Gradient.Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.65098, 0.65098, 0.65098))
+	Gradient.Rotation = 90
 
-addItemToToolbar:Invoke({Text = "Page 1", Button1UpCallback = function()
-	SetPageEnabled(1)
-end,})
+	--toolbar------------------------------------------------------------------------------------------------toolbar
+	local topbarFrameSize = 25
+	local toolbarSize = 14
 
-addItemToToolbar:Invoke({Text = "Page 2", Button1UpCallback = function()
-	SetPageEnabled(2)
-end,})
+	local topbarFrame = Instance.new("Frame", BackgroundFrame)
+
+	local DragDetector = Instance.new("UIDragDetector", topbarFrame)
+	DragDetector.ResponseStyle = Enum.UIDragDetectorResponseStyle.CustomOffset
+
+	local startDragOffset = Vector2.new()
+	DragDetector.DragStart:Connect(function(inputPosition)
+		startDragOffset = Vector2.new(BackgroundFrame.AbsolutePosition.X - inputPosition.X, BackgroundFrame.AbsolutePosition.Y - inputPosition.Y)
+		startDragOffset += Vector2.new(0,57)
+	end)
+
+	DragDetector.DragContinue:Connect(function(inputPosition)
+		BackgroundFrame.Position = UDim2.fromOffset(startDragOffset.X + inputPosition.X, startDragOffset.Y + inputPosition.Y)
+	end)
+
+	topbarFrame.Interactable = true
+	topbarFrame.Active = true
+	topbarFrame.BackgroundColor3 = themeColor
+
+	local topbarHolder = Instance.new("Frame", topbarFrame)
+
+	topbarHolder.BackgroundTransparency = 1
+	topbarHolder.Size = UDim2.new(1,-8,0,topbarFrameSize-5)
+	topbarHolder.AnchorPoint = Vector2.new(.5,0)
+	topbarHolder.Position = UDim2.new(0.5,0,0,4)
+
+	local leftButtons = topbarHolder:Clone()
+	leftButtons.Size = UDim2.new(1,0,1,0)
+
+	local leftbtnListLayout = Instance.new("UIListLayout", leftButtons)
+	leftbtnListLayout.Padding = UDim.new(0,5)
+	leftbtnListLayout.FillDirection = Enum.FillDirection.Horizontal
+	leftbtnListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+	leftbtnListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+
+	local title = Instance.new("TextLabel", leftButtons)
+	title.BackgroundTransparency = 1
+
+	title.Size = UDim2.new(1,-10,1,-10)
+	title.Text = dat.nameProperty or "Window"
+
+	title.TextSize = 14
+	title.TextYAlignment = Enum.TextYAlignment.Center
+	title.TextXAlignment = Enum.TextXAlignment.Left
+	title.Font = Enum.Font.RobotoMono
+
+	local textsize = TextService:GetTextSize(title.Text, title.TextSize, title.Font, Vector2.new(10000,10000))
+	title.Size = UDim2.new(0,textsize.X,0,textsize.Y)
+
+	local rightButtons = topbarHolder:Clone()
+	rightButtons.Size = UDim2.new(1,0,1,0)
+
+	local rightbtnListLayout = Instance.new("UIListLayout", leftButtons)
+	rightbtnListLayout.Padding = UDim.new(0,5)
+	rightbtnListLayout.FillDirection = Enum.FillDirection.Horizontal
+	rightbtnListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+	rightbtnListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+
+	leftButtons.Parent = topbarHolder
+	rightButtons.Parent = topbarHolder
+
+	local corner = Instance.new("UICorner", topbarFrame)
+	--corner.CornerRadius = UDim.new(0,4)
+
+	--local stroke = Instance.new("UIStroke", topbarFrame)
+	--stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+	local ListLayout = Instance.new("UIListLayout", topbarHolder)
+	ListLayout.FillDirection = Enum.FillDirection.Horizontal
+	ListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+	ListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+
+	topbarFrame.Size = UDim2.new(1,0,0,topbarFrameSize+3+toolbarSize+3)
+	topbarFrame.Position = UDim2.fromOffset(0,0)
+	topbarFrame.BackgroundTransparency = 0
+
+	--------------------------------------------------------------------
+
+	local toolbarFrame = Instance.new("Frame", BackgroundFrame)
+
+	local corner = Instance.new("UICorner", toolbarFrame)
+	corner.CornerRadius = UDim.new(0,4)
+
+	local stroke = Instance.new("UIStroke", toolbarFrame)
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+	local ListLayout = Instance.new("UIListLayout", toolbarFrame)
+	ListLayout.FillDirection = Enum.FillDirection.Horizontal
+	ListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+	ListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+	ListLayout.Padding = UDim.new(0,5)
 
 
-local function InitMinesweeper()
-	local minesweeperWindowObjs: windowObjects = AwesomeUIModule.CreateWindow({
-		defaultPosition = AwesomeUIModule.GetScreenMiddleCoordinates(),
-		defaultSize = Vector2.new(400,320),
-		backgroundFrameProperties = {
-			BackgroundTransparency = .3,
-		},
-		themeColor = Color3.new(0.0980392, 0.721569, 0),
-		nameProperty = "Seth\'s gui // Minesweeper 💣🚩🟥",
-	})
+	toolbarFrame.Size = UDim2.new(1,-8,0,toolbarSize)
+	toolbarFrame.Position = UDim2.fromOffset(4,topbarFrameSize+3)
+	toolbarFrame.BackgroundColor3 = BackgroundFrame.BackgroundColor3
+	toolbarFrame.BackgroundTransparency = 0
 
-	minesweeperWindowObjs.BackgroundFrame.Visible = false
+	local InsertToolbarButton = Instance.new("BindableFunction")
 
-	addItemToToolbar:Invoke({Text = "Minesweeper", Button1UpCallback = function()
-		minesweeperWindowObjs.BackgroundFrame.Visible = not minesweeperWindowObjs.BackgroundFrame.Visible
-	end,})
-	
-	local minesweeperpage, minesweeperpagescroller = minesweeperWindowObjs.insertObject:Invoke({Type = "Page"})
-	print(minesweeperpage, minesweeperpagescroller)
-	minesweeperpagescroller:Destroy()
-	minesweeperpage.AnchorPoint = Vector2.new(.5,1)
-	
-	local aspratio = Instance.new("UIAspectRatioConstraint", minesweeperpage)
-	aspratio.AspectRatio = 1
-	aspratio.DominantAxis = Enum.DominantAxis.Height
-	aspratio.AspectType = Enum.AspectType.ScaleWithParentSize
-	
-	local currentObjects = {}
-	
-	local minePercent = .02
-	local grid = 30
-	
-	local isReloading = false
-	
-	local appearTween = TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-	
-	local function ReloadMinesweeper()
-		if not isReloading then
-			isReloading = true
-		else
-			warn("Already reloading minesweeper.")
+	InsertToolbarButton.OnInvoke = function(dat: {Text:string, Button1UpCallback: RBXScriptConnection})
+		local newbutton = Instance.new("TextButton")
+		newbutton.Text = dat.Text or "Toolbar Button"
+		newbutton.BackgroundColor3 = BackgroundFrame.BackgroundColor3
+		newbutton.TextSize = toolbarSize-2
+		newbutton.Font = Enum.Font.RobotoMono
+		newbutton.TextColor3 = themeColor
+
+		local hoverHighlight = Instance.new("UIStroke")
+		hoverHighlight.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		hoverHighlight.Color = themeColor
+
+		newbutton.MouseEnter:Connect(function()
+			hoverHighlight.Parent = newbutton
+		end)
+
+		newbutton.MouseLeave:Connect(function()
+			hoverHighlight.Parent = nil
+		end)
+
+
+		--local stroke = Instance.new("UIStroke", newbutton)
+		--stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+		local corner = Instance.new("UICorner", newbutton)
+		corner.CornerRadius = UDim.new(0,4)
+
+		newbutton.MouseButton1Up:Connect(function()
+			if dat.Button1UpCallback then
+				dat.Button1UpCallback()
+			end
+		end)
+
+		local textsize = TextService:GetTextSize(dat.Text, newbutton.TextSize, newbutton.Font, Vector2.new(1000,1000))
+		newbutton.Size = UDim2.new(0,textsize.X+6,0,textsize.Y)
+
+		newbutton.Parent = toolbarFrame
+	end
+
+	--toolbar------------------------------------------------------------------------------------------------toolbar
+
+	local insertObject = Instance.new("BindableFunction")
+
+	insertObject.OnInvoke = function(dat: {Type:string})
+		if not dat.Type then
+			warn("No type specified")
 			return
 		end
-		for i,v in minesweeperpage:GetChildren() do
-			if not v:IsA("UIAspectRatioConstraint") then
-				v:Destroy()
-			end
-		end
-		
-		--[[local gridLayout = Instance.new("UIGridLayout", minesweeperpage)
-		gridLayout.CellSize = UDim2.new(1/grid,0,1/grid,0)]]
-		
-		currentObjects = {}
-		
-		for i = 1, grid * grid do
-			currentObjects[i] = {
-				x = (i-1) % grid,
-				y = math.floor((i-1) / grid),
-				isMine = false,
-				MinesNearby = 0,
-				index = i,
-				isRevealed = false,
-				isFlagged = false,
-			}
-		end
-		
-		local currentObjsNoMines = table.clone(currentObjects)
-		local mineIndexes = {}
-		
-		local minecount = 0
-		
-		local MineColors = {
-			[0] = { 255, 255, 255 }, -- No mines (white or background color)
-			[1] = {  25, 118, 210 }, -- Blue
-			[2] = {  56, 142,  60 }, -- Green
-			[3] = { 211,  47,  47 }, -- Red
-			[4] = { 123,  31, 162 }, -- Purple
-			[5] = { 255, 143,   0 }, -- Orange
-			[6] = {  0, 151, 167 }, -- Cyan
-			[7] = {  85,  85,  85 }, -- Dark gray
-			[8] = {   0,   0,   0 }  -- Black
-		}
+		if dat.Type == "Toolbar" then
 
-		local function GetAdjacentTiles(tiledata: {})
-			local neighboringTiles = {}
-			for i, v in pairs(currentObjects) do
-				if math.abs(v.x - tiledata.x) <= 1 and math.abs(v.y - tiledata.y) <= 1 and v.index ~= tiledata.index then
-					table.insert(neighboringTiles, v)
-				end
-			end
-			return neighboringTiles
-		end
+		elseif dat.Type == "Page" then
+			local holderFrame = Instance.new("Frame",BackgroundFrame)
+			holderFrame.Parent = BackgroundFrame
+			holderFrame.AnchorPoint = Vector2.new(.5,1)
+			holderFrame.Position = UDim2.new(.5,0,1,-4)
+			holderFrame.Size = UDim2.new(1,-8,1,-(topbarFrame.Size.Y.Offset + 8))
+			holderFrame.BackgroundTransparency = 0
+			holderFrame.BackgroundColor3 = Color3.new(0.101961, 0.101961, 0.101961)
 
-		local function GetNeighboringTiles(tiledata: {})
-			local neighboringTiles = {}
-			for i, v in pairs(currentObjects) do
-				if math.abs(v.x - tiledata.x) <= 1 and math.abs(v.y - tiledata.y) <= 1 and v.index ~= tiledata.index then
-					table.insert(neighboringTiles, v)
-				end
-			end
-			return neighboringTiles
-		end
-	
-		local function invertcolor(color:Color3)
-			return Color3.new(1 - color.R, 1 - color.G, 1 - color.B)
-		end
-		
-		local function makeColor(tiledata)
-			return Color3.fromRGB(MineColors[tiledata.MinesNearby][1],MineColors[tiledata.MinesNearby][2],MineColors[tiledata.MinesNearby][3])
-		end
-		
-		local function makeBGColor(tiledata)
-			return Color3.fromHSV(((tiledata.x+tiledata.y)/30)%1, .75, 1)
-		end
-		
-		local function makeDarkColor(tiledata)
-			return Color3.fromHSV(((tiledata.x+tiledata.y)/30)%1, .3, 1)
-		end
+			local corner = Instance.new("UICorner", holderFrame)
+			corner.CornerRadius = UDim.new(0,10)
 
-		
-		local function UpdateTile(tiledata:{})
-			local tile = tiledata.tileObject
-			
-			if tiledata.isRevealed then
-				if tiledata.isMine then
-					tile.Text = "💣"
-				else
-					if tiledata.MinesNearby > 0 then
-						tile.Text = tostring(tiledata.MinesNearby)
-						local color = makeColor(tiledata)
-						tile.TextColor3 = color
-						tile.BackgroundColor3 = makeDarkColor(tiledata)
-					else
-						tile.Text = ""
-						local color = makeColor(tiledata)
-						tile.TextColor3 = color
-						tile.BackgroundColor3 = makeBGColor(tiledata)
-						
-					end
-				end
-			else
-				if tiledata.isFlagged then
-					tile.Text = "🚩"
-				else
-					tile.Text = ""
-					tile.BackgroundColor3 = Color3.new(0.678431, 0.678431, 0.678431)
-				end
-			end
-		end
+			local Scroller = Instance.new("ScrollingFrame", holderFrame)
+			Scroller.Size = UDim2.new(1,0,1,0)
+			Scroller.ScrollBarThickness = 0
+			Scroller.BackgroundTransparency = 1
 
-		local function CreateTile(tiledata: {})
-			local tile = Instance.new("TextButton", minesweeperpage)
-			tiledata.tileObject = tile
-			tile.BackgroundTransparency = 1
-			tile.TextTransparency = 1
-			tile.Text = ""
-			tile.FontFace = Font.fromName("RobotoMono", Enum.FontWeight.Bold)
-			tile.FontFace.Weight = Enum.FontWeight.Bold
-			
-			tile.MouseButton1Up:Connect(function()
-				if not tiledata.isFlagged and not tiledata.isRevealed then
-					if tiledata.isMine then
-						print("You lose!")
-					else
-						tiledata.isRevealed = true
-						UpdateTile(tiledata)	
-						
-						local function showadj(thisTileData)
-							local adj = GetAdjacentTiles(thisTileData)
-							task.wait()
-							for i, v in pairs(adj) do
-								if (not v.isRevealed) and (not v.isFlagged) and (not v.isMine) then
-									v.isRevealed = true
-									UpdateTile(v)
-									if v.MinesNearby == 0 then
-										showadj(v)
-									end
-								end
-							end
-							
-						end
-						
-						local Adjacent = GetAdjacentTiles(tiledata)
-						for i, v in pairs(Adjacent) do
-							if v.MinesNearby == 0 then
-								showadj(v)
-							end
-						end
-					end
-				end
+			local ListLayout = Instance.new("UIListLayout", Scroller)
+			ListLayout.FillDirection = Enum.FillDirection.Vertical
+			ListLayout.Padding = UDim.new(0,3)
+
+			ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+				Scroller.CanvasSize = UDim2.new(0,0,0,ListLayout.AbsoluteContentSize.Y)
 			end)
-			
-			tile.MouseButton2Up:Connect(function()
-				if not tiledata.isRevealed then
-					tiledata.isFlagged = not tiledata.isFlagged
-					UpdateTile(tiledata)
-				end
-			end)
-			
-			tile:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
-				tile.TextSize = tile.AbsoluteSize.X / 1.2
-			end)
-			
-			tile.Position = UDim2.new(tiledata.x*1/grid, 0, tiledata.y/grid, 0)
-			tile.Size = UDim2.new(1/grid, 0, 1/grid, 0)	
-			tile.Parent = minesweeperpage
-			
-			UpdateTile(tiledata)
-			
-			TweenService:Create(tile, appearTween, {BackgroundTransparency = 0, TextTransparency = 0}):Play()
-		end
-	
-		
-		
-		for i = 1, math.floor(grid * grid * minePercent) do
-			local randomIndex = math.random(1, #currentObjsNoMines)
-			local ind = currentObjsNoMines[randomIndex].index
-			currentObjects[ind].isMine = true
-			table.remove(currentObjsNoMines, randomIndex)
-			table.insert(mineIndexes, ind)
-		end
-		
-		for i, v in pairs(currentObjects) do
-			if v.isMine then
-				minecount += 1
+
+			local Padding = Instance.new("UIPadding", Scroller)
+			Padding.PaddingLeft = UDim.new(0,4)
+			Padding.PaddingRight = UDim.new(0,4)
+			Padding.PaddingTop = UDim.new(0,4)
+			Padding.PaddingBottom = UDim.new(0,4)
+
+			return holderFrame, Scroller
+		elseif dat.Type == "Option" then
+			local newOptionFrame = Instance.new("Frame")
+			newOptionFrame.Size = UDim2.new(1,0,0,23)
+			newOptionFrame.BackgroundColor3 = Color3.new(0.223529, 0.203922, 0.215686)
+
+			local corner = Instance.new("UICorner", newOptionFrame)
+			corner.CornerRadius = UDim.new(0,4)
+
+			local newLabel = Instance.new("TextLabel", newOptionFrame)
+			newLabel.Position = UDim2.fromOffset(7,0)
+			newLabel.Font = Enum.Font.RobotoMono
+			newLabel.Size = UDim2.new(.5,0,1,0)
+			newLabel.TextColor3 = Color3.new(1, 1, 1)
+			newLabel.BackgroundTransparency = 1
+			newLabel.TextSize = 13
+			newLabel.TextXAlignment = Enum.TextXAlignment.Left
+			newLabel.TextYAlignment = Enum.TextYAlignment.Center
+
+			newLabel.Text = dat.Name or "Option (no name?)"
+
+			local textBox = Instance.new("TextBox", newOptionFrame)
+			textBox.AnchorPoint = Vector2.new(1,.5)
+			textBox.Position = UDim2.new(1,-2,.5,0)
+			textBox.Size = UDim2.new(.5,0,1,-4)
+			textBox.BackgroundColor3 = Color3.new(0.141176, 0.141176, 0.141176)
+			textBox.TextColor3 = Color3.new(1, 1, 1)
+			textBox.Text = ""
+			textBox.TextSize = 13
+			textBox.ClearTextOnFocus = false
+
+			local corner = Instance.new("UICorner", textBox)
+			corner.CornerRadius = UDim.new(0,2)
+
+			if dat.onvaluechangeCallback then
+				textBox.FocusLost:Connect(function()
+					dat.onvaluechangeCallback(textBox.Text)
+				end)
 			end
+
+			textBox.Font = Enum.Font.RobotoMono
+			textBox.PlaceholderText = "Input value..."
+
+			return newOptionFrame
 		end
-		
-		for i, v in pairs(mineIndexes) do
-			local neighboring = GetNeighboringTiles(currentObjects[v])
-			for i, v in pairs(neighboring) do
-				if not v.isMine then
-					currentObjects[v.index].MinesNearby += 1
-				end
-			end
-		end
-		
-		for i, v in pairs(currentObjects) do
-			CreateTile(v)
-			if i % math.floor(#currentObjects/30) == 0 then
-				task.wait()
-			end
-		end
-		
-		print(#currentObjects)
-		
-		isReloading = false
 	end
-	
-	ReloadMinesweeper()
-	
-	minesweeperWindowObjs.insertToolbarButton:Invoke({Text = "Reload", Button1UpCallback = function()
-		print("retry")
-		ReloadMinesweeper()
-	end,})
-	
-	minesweeperWindowObjs.insertToolbarButton:Invoke({Text = "Close", Button1UpCallback = function()
-		print("close")
-	end,})
-	
-	
+
+	local removeObject = Instance.new("BindableEvent")
+
+
+	NewScreenGui.Parent = Player.PlayerGui
+
+	return {NewScreenGui = NewScreenGui, BackgroundFrame = BackgroundFrame, insertObject = insertObject, removeObject = removeObject, insertToolbarButton = InsertToolbarButton}
 end
 
-InitMinesweeper()
+return module
