@@ -5,6 +5,8 @@ local mouse = Player:GetMouse()
 
 local TextService = game:GetService('TextService')
 local RunService = game:GetService("RunService")
+local InputService = game:GetService("UserInputService")
+local contextaction = game:GetService("ContextActionService")
 
 function module.GetScreenMiddleCoordinates(): Vector2
 	return Vector2.new(workspace.CurrentCamera.ViewportSize.X/2, workspace.CurrentCamera.ViewportSize.Y/2)
@@ -65,11 +67,42 @@ function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nam
 	DragDetector.ResponseStyle = Enum.UIDragDetectorResponseStyle.CustomOffset
 
 	local startDragOffset = Vector2.new()
+	local isDragging = false
+	local isControlPressed = false
 	DragDetector.DragStart:Connect(function(inputPosition)
 		startDragOffset = Vector2.new(BackgroundFrame.AbsolutePosition.X - inputPosition.X, BackgroundFrame.AbsolutePosition.Y - inputPosition.Y)
 		startDragOffset += Vector2.new(0,57)
+		
+		isDragging = true
+		
+		contextaction:BindAction("ControlPress", function(actionName, InputState, InputObject)
+			if InputState == Enum.UserInputState.Begin then
+				isControlPressed = true
+			elseif InputState == Enum.UserInputState.End then
+				isControlPressed = false
+			end
+		end, false, Enum.KeyCode.LeftControl)
+	end)
+	
+	DragDetector.DragEnd:Connect(function()
+		contextaction:UnbindAction("ControlPress")
+		isDragging = false
+		isControlPressed = true
 	end)
 
+	InputService.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseWheel then
+			if isDragging then
+				if isControlPressed then
+					BackgroundFrame.Size += UDim2.fromOffset(0, input.Position.Z*10)
+				else
+					BackgroundFrame.Size += UDim2.fromOffset(input.Position.Z*10, 0)
+				end
+			
+			end
+		end	
+	end)
+	
 	DragDetector.DragContinue:Connect(function(inputPosition)
 		BackgroundFrame.Position = UDim2.fromOffset(startDragOffset.X + inputPosition.X, startDragOffset.Y + inputPosition.Y)
 	end)
