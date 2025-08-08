@@ -147,9 +147,9 @@ function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nam
 	toolbarFrame.BackgroundColor3 = BackgroundFrame.BackgroundColor3
 	toolbarFrame.BackgroundTransparency = 0
 
-	local InsertToolbarButton = Instance.new("BindableFunction")
+	
 
-	InsertToolbarButton.OnInvoke = function(dat: {Text:string, Button1UpCallback: RBXScriptConnection})
+	local InsertToolbarButton = function(dat: {Text:string, Button1UpCallback: RBXScriptConnection})
 		local newbutton = Instance.new("TextButton")
 		newbutton.Text = dat.Text or "Toolbar Button"
 		newbutton.BackgroundColor3 = BackgroundFrame.BackgroundColor3
@@ -190,9 +190,9 @@ function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nam
 
 	--toolbar------------------------------------------------------------------------------------------------toolbar
 
-	local insertObject = Instance.new("BindableFunction")
+	
 
-	insertObject.OnInvoke = function(dat: {Type:string})
+	local insertObject = function(dat: {Type:string})
 		if not dat.Type then
 			warn("No type specified")
 			return
@@ -229,8 +229,6 @@ function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nam
 			Padding.PaddingRight = UDim.new(0,4)
 			Padding.PaddingTop = UDim.new(0,4)
 			Padding.PaddingBottom = UDim.new(0,4)
-			
-			print("from module: " .. holderFrame,Scroller)
 			
 			return holderFrame, Scroller
 		elseif dat.Type == "Option" then
