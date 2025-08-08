@@ -201,6 +201,7 @@ function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nam
 
 		elseif dat.Type == "Page" then
 			local holderFrame = Instance.new("Frame",BackgroundFrame)
+			holderFrame.Parent = BackgroundFrame
 			holderFrame.AnchorPoint = Vector2.new(.5,1)
 			holderFrame.Position = UDim2.new(.5,0,1,-4)
 			holderFrame.Size = UDim2.new(1,-8,1,-(topbarFrame.Size.Y.Offset + 8))
@@ -285,4 +286,3 @@ function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nam
 end
 
 return module
-
