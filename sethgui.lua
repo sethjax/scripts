@@ -58,6 +58,13 @@ addItemToToolbar:Invoke({Text = "Page 2", Button1UpCallback = function()
 	SetPageEnabled(2)
 end,})
 
+local function tabletoString(tbl:{})
+	local str = ""
+	for i,v in pairs(tbl) do
+		str = str .. i .. " = " .. tostring(v) .. "\n"
+	end
+	return str
+end
 
 local function InitMinesweeper()
 	local minesweeperWindowObjs: windowObjects = AwesomeUIModule.CreateWindow({
@@ -77,7 +84,7 @@ local function InitMinesweeper()
 	end,})
 	
 	local minesweeperpage, minesweeperpagescroller = minesweeperWindowObjs.insertObject:Invoke({Type = "Page"})
-	print(minesweeperpage, minesweeperpagescroller)
+	print(tabletoString(minesweeperpage), tabletoString(minesweeperpagescroller))
 	minesweeperpagescroller:Destroy()
 	minesweeperpage.AnchorPoint = Vector2.new(.5,1)
 	
