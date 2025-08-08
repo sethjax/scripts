@@ -4,6 +4,7 @@ local AwesomeUIModule
 if RunService:IsStudio() then
 	AwesomeUIModule = require(script.Parent:WaitForChild("AwesomeUIModule"))
 else
+	-- you can go to this link it is not obfuscated :)
 	AwesomeUIModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/sethjax/scripts/refs/heads/main/awesomeuimodule.lua"))
 end
 
