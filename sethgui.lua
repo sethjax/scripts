@@ -1,6 +1,11 @@
 local RunService = game:GetService("RunService")
 
-local AwesomeUIModule = game:HttpGet("")
+local AwesomeUIModule
+if RunService:IsStudio() then
+	AwesomeUIModule = require(script.Parent:WaitForChild("AwesomeUIModule"))
+else
+	AwesomeUIModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/sethjax/scripts/refs/heads/main/awesomeuimodule.lua"))
+end
 
 type windowObjects = {NewScreenGui: ScreenGui, BackgroundFrame: Frame, insertObject: BindableFunction, removeObject: BindableFunction}
 
