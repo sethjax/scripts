@@ -4,6 +4,7 @@ local Player = game.Players.LocalPlayer
 local mouse = Player:GetMouse()
 
 local TextService = game:GetService('TextService')
+local RunService = game:GetService("RunService")
 
 function module.GetScreenMiddleCoordinates(): Vector2
 	return Vector2.new(workspace.CurrentCamera.ViewportSize.X/2, workspace.CurrentCamera.ViewportSize.Y/2)
@@ -15,6 +16,14 @@ end
 
 function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nameProperty:string, defaultPosition:Vector2, defaultSize: Vector2, backgroundFrameProperties: {}, themeColor:Color3}): {NewScreenGui: ScreenGui, BackgroundFrame: Frame, insertObject: BindableFunction, removeObject: BindableFunction}
 	local NewScreenGui = Instance.new("ScreenGui")
+	NewScreenGui.DisplayOrder = 100000000
+	NewScreenGui:GetPropertyChangedSignal("Enabled"):Connect(function()
+		if not NewScreenGui.Enabled then
+			NewScreenGui.Enabled = true
+		end
+	end)
+	NewScreenGui.Enabled = true
+	NewScreenGui:AddTag("sethGui")
 	NewScreenGui.Name = dat.nameProperty or "genericWindow"
 	NewScreenGui.IgnoreGuiInset = true
 
