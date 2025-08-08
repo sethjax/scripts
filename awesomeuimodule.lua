@@ -198,7 +198,7 @@ function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nam
 			return
 		end
 		if dat.Type == "Toolbar" then
-
+			return nil
 		elseif dat.Type == "Page" then
 			local holderFrame = Instance.new("Frame",BackgroundFrame)
 			holderFrame.Parent = BackgroundFrame
@@ -229,7 +229,9 @@ function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nam
 			Padding.PaddingRight = UDim.new(0,4)
 			Padding.PaddingTop = UDim.new(0,4)
 			Padding.PaddingBottom = UDim.new(0,4)
-
+			
+			print("from module: " .. holderFrame,Scroller)
+			
 			return holderFrame, Scroller
 		elseif dat.Type == "Option" then
 			local newOptionFrame = Instance.new("Frame")
@@ -274,6 +276,8 @@ function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nam
 			textBox.PlaceholderText = "Input value..."
 
 			return newOptionFrame
+		else
+			return nil
 		end
 	end
 
