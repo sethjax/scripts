@@ -1,7 +1,5 @@
 local module = {}
 
---hello
-
 local Player = game.Players.LocalPlayer
 local mouse = Player:GetMouse()
 
@@ -287,3 +285,4 @@ function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nam
 end
 
 return module
+
