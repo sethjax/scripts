@@ -16,6 +16,7 @@ end
 
 function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nameProperty:string, defaultPosition:Vector2, defaultSize: Vector2, backgroundFrameProperties: {}, themeColor:Color3}): {NewScreenGui: ScreenGui, BackgroundFrame: Frame, insertObject: BindableFunction, removeObject: BindableFunction}
 	local NewScreenGui = Instance.new("ScreenGui")
+	NewScreenGui.ResetOnSpawn = false
 	NewScreenGui.DisplayOrder = 100000000
 	NewScreenGui:GetPropertyChangedSignal("Enabled"):Connect(function()
 		if not NewScreenGui.Enabled then
@@ -291,7 +292,7 @@ function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nam
 	local removeObject = Instance.new("BindableEvent")
 
 
-	NewScreenGui.Parent = Player.PlayerGui
+	NewScreenGui.Parent = game.Players.LocalPlayer.PlayerGui
 
 	return {NewScreenGui = NewScreenGui, BackgroundFrame = BackgroundFrame, insertObject = insertObject, removeObject = removeObject, insertToolbarButton = InsertToolbarButton}
 end
