@@ -77,6 +77,7 @@ local function InitMinesweeper()
 	end,})
 	
 	local minesweeperpage, minesweeperpagescroller = minesweeperWindowObjs.insertObject:Invoke({Type = "Page"})
+	print(minesweeperpage, minesweeperpagescroller)
 	minesweeperpagescroller:Destroy()
 	minesweeperpage.AnchorPoint = Vector2.new(.5,1)
 	
