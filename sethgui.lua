@@ -83,8 +83,8 @@ local function InitMinesweeper()
 		minesweeperWindowObjs.BackgroundFrame.Visible = not minesweeperWindowObjs.BackgroundFrame.Visible
 	end,})
 	
-	local minesweeperpage, minesweeperpagescroller = minesweeperWindowObjs.insertObject:Invoke({Type = "Page"})
-	print(tabletoString(minesweeperpage), tabletoString(minesweeperpagescroller))
+	local minesweeperpage, minesweeperpagescroller, thingy, thingy2 = minesweeperWindowObjs.insertObject:Invoke({Type = "Page"})
+	print(tabletoString(thingy), tabletoString(thingy2))
 	minesweeperpagescroller:Destroy()
 	minesweeperpage.AnchorPoint = Vector2.new(.5,1)
 	
