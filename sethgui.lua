@@ -322,8 +322,3 @@ local function InitMinesweeper()
 end
 
 InitMinesweeper()
-	
-	
-end
-
-InitMinesweeper()
