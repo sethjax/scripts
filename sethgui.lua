@@ -88,7 +88,7 @@ local function InitMinesweeper()
 	local currentObjects = {}
 	
 	local minePercent = .2
-	local grid = 12
+	local grid = 15
 	
 	local isReloading = false
 	
@@ -160,6 +160,22 @@ local function InitMinesweeper()
 			end
 			return neighboringTiles
 		end
+	
+		local function invertcolor(color:Color3)
+			return Color3.new(1 - color.R, 1 - color.G, 1 - color.B)
+		end
+		
+		local function makeColor(tiledata)
+			return Color3.fromRGB(MineColors[tiledata.MinesNearby][1],MineColors[tiledata.MinesNearby][2],MineColors[tiledata.MinesNearby][3])
+		end
+		
+		local function makeBGColor(tiledata)
+			return Color3.fromHSV(((tiledata.x+tiledata.y)/30)%1, .75, 1)
+		end
+		
+		local function makeDarkColor(tiledata)
+			return Color3.fromHSV(((tiledata.x+tiledata.y)/30)%1, .3, 1)
+		end
 
 		
 		local function UpdateTile(tiledata:{})
@@ -171,12 +187,15 @@ local function InitMinesweeper()
 				else
 					if tiledata.MinesNearby > 0 then
 						tile.Text = tostring(tiledata.MinesNearby)
-						tile.TextColor3 = Color3.fromRGB(MineColors[tiledata.MinesNearby][1],MineColors[tiledata.MinesNearby][2],MineColors[tiledata.MinesNearby][3])
-						tile.BackgroundColor3 = Color3.new(0.827451, 0.827451, 0.827451)
+						local color = makeColor(tiledata)
+						tile.TextColor3 = color
+						tile.BackgroundColor3 = makeDarkColor(tiledata)
 					else
 						tile.Text = ""
-						tile.TextColor3 = Color3.fromRGB(MineColors[tiledata.MinesNearby][1],MineColors[tiledata.MinesNearby][2],MineColors[tiledata.MinesNearby][3])
-						tile.BackgroundColor3 = Color3.new(0.827451, 0.827451, 0.827451)
+						local color = makeColor(tiledata)
+						tile.TextColor3 = color
+						tile.BackgroundColor3 = makeBGColor(tiledata)
+						
 					end
 				end
 			else
@@ -195,7 +214,8 @@ local function InitMinesweeper()
 			tile.BackgroundTransparency = 1
 			tile.TextTransparency = 1
 			tile.Text = ""
-			tile.Font = Enum.Font.RobotoMono
+			tile.FontFace = Font.fromName("RobotoMono", Enum.FontWeight.Bold)
+			tile.FontFace.Weight = Enum.FontWeight.Bold
 			
 			tile.MouseButton1Up:Connect(function()
 				if not tiledata.isFlagged and not tiledata.isRevealed then
