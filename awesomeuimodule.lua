@@ -74,18 +74,22 @@ function module.CreateWindow(dat: {isDraggable:boolean, isResizable:boolean, nam
 		startDragOffset += Vector2.new(0,57)
 		
 		isDragging = true
-		
-		contextaction:BindAction("ControlPress", function(actionName, InputState, InputObject)
-			if InputState == Enum.UserInputState.Begin then
-				isControlPressed = true
-			elseif InputState == Enum.UserInputState.End then
-				isControlPressed = false
-			end
-		end, false, Enum.KeyCode.LeftControl)
 	end)
 	
+	InputService.InputBegan:Connect(function(obj)
+		if obj.KeyCode == Enum.KeyCode.LeftControl then
+			isControlPressed = true
+		end
+	end)
+	
+	InputService.InputEnded:Connect(function(obj)
+		if obj.KeyCode == Enum.KeyCode.LeftControl then
+			isControlPressed = false
+		end
+	end)
+
+	
 	DragDetector.DragEnd:Connect(function()
-		contextaction:UnbindAction("ControlPress")
 		isDragging = false
 		isControlPressed = true
 	end)
