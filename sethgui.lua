@@ -2,6 +2,7 @@ local thread
 thread = task.spawn(function()
 	local RunService = game:GetService("RunService")
 	local TweenService = game:GetService("TweenService")
+	local TextService = game:GetService("TextService")
 	
 	local Settings = _G.SethGuiScriptSettings
 	if not Settings then
@@ -110,7 +111,11 @@ thread = task.spawn(function()
 		end
 		return str
 	end
-
+	-- minesweeper settings
+	local minePercent = .15
+	minePercent = .2
+	local grid = 16
+	-----
 	local function InitMinesweeper()
 		local minesweeperWindowObjs: windowObjects = AwesomeUIModule.CreateWindow({
 			defaultPosition = AwesomeUIModule.GetScreenMiddleCoordinates(),
@@ -119,7 +124,7 @@ thread = task.spawn(function()
 				BackgroundTransparency = .3,
 			},
 			themeColor = Color3.new(0.0980392, 0.721569, 0),
-			nameProperty = "Seth\'s gui // Minesweeper 💣🚩🟥",
+			nameProperty = "Seth\'s gui | Minesweeper 💣🚩🟥",
 		})
 
 		minesweeperWindowObjs.BackgroundFrame.Visible = false
@@ -138,9 +143,6 @@ thread = task.spawn(function()
 		aspratio.AspectType = Enum.AspectType.ScaleWithParentSize
 
 		local currentObjects = {}
-
-		local minePercent = .15
-		local grid = 12
 
 		local isReloading = false
 
@@ -377,6 +379,116 @@ thread = task.spawn(function()
 
 
 	end
+	
+	local function InitConsole()
+		local consoleWindow: windowObjects = AwesomeUIModule.CreateWindow({
+			defaultPosition = AwesomeUIModule.GetScreenMiddleCoordinates(),
+			defaultSize = Vector2.new(400,320),
+			backgroundFrameProperties = {
+				BackgroundTransparency = .3,
+				BackgroundColor3 = Color3.new(0, 0, 0),
+			},
+			themeColor = Color3.new(0.705882, 0, 0.901961),
+			nameProperty = "Seth\'s gui | Console",
+		})
+		
+		consoleWindow.BackgroundFrame.Visible = false
+		
+		addItemToToolbar({Text = "Console", Button1UpCallback = function()
+			consoleWindow.BackgroundFrame.Visible = not consoleWindow.BackgroundFrame.Visible
+		end,})
+		
+		consoleWindow.insertToolbarButton({Text = "Close", Button1UpCallback = function()
+			print("close")
+			consoleWindow.BackgroundFrame.Visible = false
+		end,})
+		
+		local defaultConsole:Frame, Scroller:ScrollingFrame = consoleWindow.insertObject({Type = "Page"})
+		
+		consoleWindow.insertToolbarButton({Text = "Clear", Button1UpCallback = function()
+			for i,v in Scroller:GetChildren() do
+				if v:IsA("TextLabel") then
+					v:Destroy()
+				end
+			end
+		end,})
+		
+		local ListLayout = Scroller:FindFirstChildOfClass("UIListLayout")
+		ListLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+		
+		Scroller.Size = UDim2.new(1, 0, 1, -22)
+		local newTextBox = Instance.new("TextBox", defaultConsole)
+		newTextBox.Font = Enum.Font.RobotoMono
+		newTextBox.TextSize = 14
+		newTextBox.Size = UDim2.new(1, -8, 0, 20)
+		newTextBox.AnchorPoint = Vector2.new(.5, 1)
+		newTextBox.TextColor3 = Color3.new(1, 1, 1)
+		newTextBox.Position = UDim2.new(.5, 0, 1, -4)
+		newTextBox.TextXAlignment = Enum.TextXAlignment.Left
+		newTextBox.Text = ""
+		newTextBox.ClearTextOnFocus = false
+		newTextBox.PlaceholderText = "Input command..."
+		newTextBox.BackgroundColor3 = Color3.new(0, 0, 0)
+		
+		local function MakeMessage(message:string, color:Color3)
+			local newMessage = Instance.new("TextLabel", Scroller)
+			newMessage.BackgroundTransparency = 1
+			newMessage.Font = Enum.Font.RobotoMono
+			newMessage.TextSize = 14
+			newMessage.Text = message
+			newMessage.TextColor3 = color or Color3.new(0.580392, 0.623529, 1)
+			newMessage.TextWrapped = true
+			newMessage.TextXAlignment = Enum.TextXAlignment.Left
+			local function updateSize()
+				local CalcSize = TextService:GetTextSize(newMessage.Text, newMessage.TextSize, newMessage.Font, Vector2.new(defaultConsole.AbsoluteSize.X, 100000000))
+				newMessage.Size = UDim2.fromOffset(CalcSize.X,CalcSize.Y)
+			end
+			newMessage.Parent:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateSize)
+			newMessage.Size = UDim2.new(1, 0, 0, 14)
+			updateSize()
+		end
+		
+		local function ProcessCommand(command:string)
+			command = string.lower(command)
+			if string.sub(command, 1, string.len("MinePercent")) == "minepercent" then
+				local percent = tonumber(string.sub(command, 13))
+				if percent then
+					minePercent = percent
+				end
+				MakeMessage("Set mine percent to " .. percent)
+				return
+			elseif string.sub(command, 1, string.len("gridsize")) == "gridsize" then
+				local size = tonumber(string.sub(command, 9))
+				if size then
+					grid = size
+				end
+				MakeMessage("Set grid size to " .. size)
+				return
+			end
+			
+			error("Unknown command: " .. command)
+		end
+		
+		newTextBox.FocusLost:Connect(function(didPressEnter)
+			if didPressEnter then
+				local text = newTextBox.Text
+				newTextBox.Text = ""
+				local success, err = pcall(function()
+					ProcessCommand(text)
+				end)
+				if not success then
+					MakeMessage("Error: "..err, Color3.new(1, 0, 0))
+				end
+			end
+		end)
+		
+		local Corner = Instance.new("UICorner", newTextBox)
+		
+		defaultConsole.BackgroundColor3 = Color3.new(0, 0, 0)
+		
+		MakeMessage("Console loaded!", Color3.new(0, 1, 0.0823529))
+	end
 
+	InitConsole()
 	InitMinesweeper()
 end)
